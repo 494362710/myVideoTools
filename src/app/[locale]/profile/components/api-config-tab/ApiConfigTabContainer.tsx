@@ -241,9 +241,6 @@ export function ApiConfigTabContainer() {
       </div>
     )
   }
-
-
-
   return (
     <div className="flex h-full flex-col">
       <ApiConfigToolbar

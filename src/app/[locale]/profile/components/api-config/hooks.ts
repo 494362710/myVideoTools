@@ -1,6 +1,7 @@
 'use client'
 import { logError as _ulogError } from '@/lib/logging/core'
 import { useLocale, useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -237,6 +238,7 @@ function applyPricingDisplay(model: CustomModel, map: PricingDisplayMap): Custom
 
 export function useProviders(): UseProvidersReturn {
     const locale = useLocale()
+    const router = useRouter()
     const t = useTranslations('apiConfig')
     const presetProviders = PRESET_PROVIDERS.map((provider) => ({
         ...provider,
@@ -288,6 +290,10 @@ export function useProviders(): UseProvidersReturn {
         let loadedSuccessfully = false
         try {
             const res = await apiFetch('/api/user/api-config')
+            if (res.status === 401) {
+                router.push({ pathname: '/auth/signin' })
+                return
+            }
             if (!res.ok) {
                 throw new Error(`api-config load failed: HTTP ${res.status}`)
             }

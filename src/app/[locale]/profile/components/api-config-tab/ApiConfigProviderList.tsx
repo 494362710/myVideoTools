@@ -101,7 +101,8 @@ export function ApiConfigProviderList({
     },
     [onReorderProviders],
   )
-
+  console.log(55555)
+  console.log(modelProviders)
   const providerModelsById = useMemo(() => {
     const map = new Map<string, CustomModel[]>()
     for (const provider of modelProviders) {
@@ -109,18 +110,22 @@ export function ApiConfigProviderList({
     }
     return map
   }, [getModelsForProvider, modelProviders])
-
+  console.log(666666)
+  console.log(providerModelsById)
   const hiddenProviders = useMemo(() => {
     return modelProviders.filter((provider) => provider.hidden === true)
   }, [modelProviders])
-
+  console.log(77777)
+  console.log(hiddenProviders)
   const visibleProviders = useMemo(() => {
     const hiddenIds = new Set(hiddenProviders.map((provider) => provider.id))
     return modelProviders.filter((provider) => !hiddenIds.has(provider.id))
   }, [hiddenProviders, modelProviders])
-
+  console.log(88888)
+  console.log(visibleProviders)
   const hiddenProviderNames = hiddenProviders.map((provider) => provider.name).join(' / ')
-
+  console.log(9999)
+  console.log(hiddenProviders)
   return (
     <>
       <div className="space-y-4">

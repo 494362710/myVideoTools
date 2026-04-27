@@ -7,7 +7,6 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import "../globals.css";
 import { Providers } from "./providers";
-
 import { locales } from '@/i18n/routing';
 
 
