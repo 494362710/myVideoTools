@@ -208,6 +208,8 @@ export default function WorkspacePage() {
           alert(t('analysisModelRequiredAfterCreate'))
           router.push({ pathname: '/profile' })
         }
+      } else if (response.status === 401) {
+        router.push({ pathname: '/auth/signin' })
       } else {
         setCreateError(await readApiErrorMessage(response, t('createFailed')))
       }

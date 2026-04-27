@@ -1,6 +1,10 @@
 // Next.js Instrumentation - 在应用启动时执行
 // https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
 
+function isBackgroundServicesEnabled() {
+  return (process.env.ENABLE_BACKGROUND_SERVICES || 'true').trim().toLowerCase() !== 'false'
+}
+
 export async function register() {
   // 在 Edge Runtime 中直接返回，避免加载 Prisma（它使用了动态代码生成）
   if (process.env.NEXT_RUNTIME === 'edge') {
@@ -32,6 +36,11 @@ export async function register() {
       }
     } catch (error) {
       _ulogError('[Instrumentation] Failed to reset processing tasks:', error)
+    }
+
+    if (!isBackgroundServicesEnabled()) {
+      _ulogInfo('[Instrumentation] Background services disabled, skipping queue recovery and watchdog startup')
+      return
     }
 
     // Phase 2: 将所有 queued 任务重新加入 BullMQ 队列

@@ -308,6 +308,18 @@ export async function requireUserAuth(): Promise<{ session: AuthSession } | Next
     if (!session?.user?.id) {
         return unauthorized()
     }
+
+    const user = await withPrismaRetry(() =>
+        prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { id: true },
+        })
+    )
+
+    if (!user) {
+        return unauthorized('User session is stale, please sign in again')
+    }
+
     bindAuthLogContext(session)
     return { session }
 }

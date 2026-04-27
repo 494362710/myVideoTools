@@ -97,6 +97,10 @@
       "title": "需要自定义角色和场景？",
       "description": "点击右上角的「资产库」按钮，可以上传资产设定文档或手动添加角色/场景。AI 将优先使用资产库中的设定进行分析。"
     },
+    "asyncCreationDisabled": {
+      "title": "当前本地 Web-only 模式已禁用开始创作",
+      "description": "故事转剧本依赖 worker 和 Redis。请使用 npm run dev 启动完整本地服务后，再执行开始创作。"
+    },
     "videoRatio": "画面比例",
     "videoRatioHint": "选择合适的画面比例，可以更好适配投放平台和素材形态",
     "ratioUsage": {

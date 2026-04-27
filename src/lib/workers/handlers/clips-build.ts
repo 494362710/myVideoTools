@@ -24,6 +24,19 @@ function readText(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
+function buildFallbackResolvedClip(content: string) {
+  const normalized = content.trim()
+  return {
+    startText: normalized,
+    endText: normalized,
+    summary: '',
+    location: null,
+    characters: [],
+    props: null,
+    content,
+  }
+}
+
 const MAX_SPLIT_BOUNDARY_ATTEMPTS = 2
 const CLIP_BOUNDARY_SUFFIX = `
 
@@ -133,6 +146,7 @@ export async function handleClipsBuildTask(job: Job<TaskJobData>) {
     content: string
   }> = []
   let lastBoundaryError: Error | null = null
+  let sawEmptyClipResult = false
 
   try {
     for (let attempt = 1; attempt <= MAX_SPLIT_BOUNDARY_ATTEMPTS; attempt += 1) {
@@ -163,7 +177,8 @@ export async function handleClipsBuildTask(job: Job<TaskJobData>) {
 
       const parsed = parseClipArrayResponse(responseText)
       if (parsed.length === 0) {
-        lastBoundaryError = new Error('Invalid clips data structure')
+        sawEmptyClipResult = true
+        lastBoundaryError = new Error('split_clips returned empty clips')
         continue
       }
 
@@ -203,6 +218,12 @@ export async function handleClipsBuildTask(job: Job<TaskJobData>) {
     }
   } finally {
     await streamCallbacks.flush()
+  }
+
+  if (resolvedClips.length === 0) {
+    if (sawEmptyClipResult) {
+      resolvedClips.push(buildFallbackResolvedClip(contentToProcess))
+    }
   }
 
   if (resolvedClips.length === 0) {

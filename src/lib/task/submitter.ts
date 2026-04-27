@@ -34,6 +34,21 @@ function isRunCentricTaskType(type: TaskType): boolean {
   return RUN_CENTRIC_TASK_TYPES.has(type)
 }
 
+function isRedisUnavailableError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  const normalized = message.trim().toLowerCase()
+  return normalized.includes('max retries per request')
+    || normalized.includes('econnrefused')
+    || normalized.includes('redis') && normalized.includes('connect')
+}
+
+function toTaskEnqueueFailureMessage(error: unknown) {
+  if (isRedisUnavailableError(error)) {
+    return 'Redis is unavailable for async task submission. Start Redis/worker services with npm run dev, or use npm run dev:local for web-only mode.'
+  }
+  return error instanceof Error ? error.message : String(error)
+}
+
 export function toObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   return value as Record<string, unknown>
@@ -342,7 +357,7 @@ export async function submitTask(params: {
         taskId: task.id,
       })
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error)
+      const message = toTaskEnqueueFailureMessage(error)
       await markTaskEnqueueFailed(task.id, message || 'queue.add failed')
       const rollbackResult = await rollbackTaskBillingForTask({
         taskId: task.id,

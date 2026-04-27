@@ -68,27 +68,31 @@ git pull
 docker compose down && docker compose up -d --build
 ```
 
-### Method 3: Local Development (For Developers)
+### Method 3: Local Web Mode (No Docker Compose Required)
 
 ```bash
 git clone https://github.com/saturndec/waoowaoo.git
 cd waoowaoo
 
-# Copy environment config (must be done before npm install)
-cp .env.example .env
+# Copy local-only environment config
+cp .env.local.example .env
 # ⚠️ Edit .env to fill in your AI API Keys (NEXTAUTH_URL defaults to http://localhost:3000, no change needed)
 
 npm install
 
-# Start infrastructure only
-docker compose up mysql redis minio -d
+# First run: generate the SQLite client, initialize the local DB, and launch the app
+npm run dev:local:setup
 
-# Run database migration
-npx prisma db push
-
-# Start development server
-npm run dev
+# Later runs: start the web app directly
+npm run dev:local
 ```
+
+> [!TIP]
+> `dev:local` uses SQLite + local file storage and starts only the web app.
+> It is intended for UI work, API debugging, and local iteration without Docker.
+
+> [!WARNING]
+> Queue-based features still depend on Redis workers and Bull Board. For the full async pipeline, keep using `docker compose up mysql redis minio -d` and then run `npm run dev`.
 
 ---
 

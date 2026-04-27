@@ -9,6 +9,7 @@ import { getLLMTaskPolicy } from './task-policy'
 import { getTaskFlowMeta } from './stage-pipeline'
 import { resolveRequiredTaskLocale } from '@/lib/task/resolve-locale'
 import { getProjectModelConfig, getUserModelConfig } from '@/lib/config-service'
+import { ApiError } from '@/lib/api-errors'
 
 export function toObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
@@ -55,6 +56,10 @@ function shouldRunAsyncTask(request: NextRequest, body?: unknown) {
   return false
 }
 
+function isBackgroundServicesEnabled() {
+  return (process.env.ENABLE_BACKGROUND_SERVICES || 'true').trim().toLowerCase() !== 'false'
+}
+
 export async function maybeSubmitLLMTask(params: {
   request: NextRequest
   userId: string
@@ -73,6 +78,12 @@ export async function maybeSubmitLLMTask(params: {
   if (!observeEnabled) return null
   if (!policy.consoleEnabled && !shouldRunAsyncTask(params.request, params.body)) return null
   if (shouldRunSyncTask(params.request, params.body)) return null
+  if (!isBackgroundServicesEnabled()) {
+    throw new ApiError('INVALID_PARAMS', {
+      code: 'BACKGROUND_SERVICES_DISABLED',
+      message: 'Background services are disabled in local web mode. Start worker/Redis services with npm run dev before running async creation flows.',
+    })
+  }
 
   const payload = toObject(params.body)
   const displayMode = resolveDisplayMode(

@@ -47,7 +47,10 @@ export const Tool = ({
 export type ToolHeaderProps = HTMLAttributes<HTMLButtonElement> & {
   title?: string;
 } & (
-  | { type: ToolUIPart["type"]; state: ToolUIPart["state"]; toolName?: never }
+  | { 
+     type: ToolUIPart["type"];
+     state: ToolUIPart["state"]; 
+     toolName?: never }
   | {
     type: DynamicToolUIPart["type"];
     state: DynamicToolUIPart["state"];

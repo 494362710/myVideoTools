@@ -75,32 +75,31 @@ git pull
 docker compose down && docker compose up -d --build
 ```
 
-### 方式三：本地开发模式（开发者）
+### 方式三：本地直启模式（不依赖 Docker Compose）
 
 ```bash
 git clone https://github.com/saturndec/waoowaoo.git
 cd waoowaoo
 
-# 复制环境变量配置文件（必须在 npm install 之前完成）
-cp .env.example .env
+# 复制本地直启环境变量配置
+cp .env.local.example .env
 # ⚠️ 编辑 .env，填入你的 AI API Key（NEXTAUTH_URL 默认已是 http://localhost:3000，无需修改）
 
 npm install
 
-# 只启动基础设施
-# 注意：docker-compose.yml 将服务映射到非标准端口，.env.example 已按此预设
-mysql:13306  redis:16379  minio:19000
-docker compose up mysql redis minio -d
+# 首次运行：生成 SQLite Client、初始化本地数据库，并启动 Web
+npm run dev:local:setup
 
-# 初始化数据库表结构（首次必须执行，跳过会导致启动后报错）
-npx prisma db push
-
-# 启动开发服务器
-npm run dev
+# 后续启动：直接启动 Web
+npm run dev:local
 ```
 
+> [!TIP]
+> `dev:local` 使用 SQLite + 本地文件存储，只启动 Web 进程，不会启动 worker / Redis / Bull Board。
+> 适合本地页面开发、接口调试、UI 联调。
+
 > [!WARNING]
-> 跳过 `npx prisma db push` 会导致所有数据库表不存在，启动后报错 `The table 'tasks' does not exist`。请务必先运行此命令再启动开发服务器。
+> 异步任务队列相关能力（如 BullMQ worker、watchdog、任务面板）仍依赖 Redis。若你需要完整任务链路，请继续使用 `docker compose up mysql redis minio -d` 后执行 `npm run dev`。
 
 ---
 

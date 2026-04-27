@@ -158,4 +158,30 @@ describe('worker clips-build behavior', () => {
     const job = buildJob({ episodeId: 'episode-1' })
     await expect(handleClipsBuildTask(job)).rejects.toThrow('split_clips boundary matching failed')
   })
+
+  it('falls back to a single full-content clip when split_clips returns empty array', async () => {
+    llmMock.getCompletionContent.mockReturnValue('[]')
+
+    const job = buildJob({ episodeId: 'episode-1' })
+    const result = await handleClipsBuildTask(job)
+
+    expect(result).toEqual({
+      episodeId: 'episode-1',
+      count: 1,
+    })
+
+    expect(prismaMock.novelPromotionClip.create).toHaveBeenCalledWith({
+      data: {
+        episodeId: 'episode-1',
+        startText: 'A START one END B START two END C',
+        endText: 'A START one END B START two END C',
+        summary: '',
+        location: null,
+        characters: JSON.stringify([]),
+        props: null,
+        content: 'A START one END B START two END C',
+      },
+      select: { id: true },
+    })
+  })
 })

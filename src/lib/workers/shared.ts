@@ -32,6 +32,7 @@ function toObject(value: unknown): Record<string, unknown> {
 function readStringField(payload: Record<string, unknown>, key: string): string | null {
   const value = payload[key]
   if (typeof value !== 'string') return null
+
   const trimmed = value.trim()
   return trimmed ? trimmed : null
 }

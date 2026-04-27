@@ -97,6 +97,10 @@
       "title": "Need custom characters and locations?",
       "description": "Click the 「Asset Library」 button in the top right to upload asset setting documents or manually add characters/locations. AI will prioritize using settings from the asset library for analysis."
     },
+    "asyncCreationDisabled": {
+      "title": "Start Creating is disabled in local web-only mode",
+      "description": "Story-to-script creation depends on worker and Redis services. Start the full local stack with npm run dev, then try again."
+    },
     "videoRatio": "Video Ratio",
     "videoRatioHint": "Pick a ratio that matches your target platform and content format",
     "ratioUsage": {

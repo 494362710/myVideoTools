@@ -111,6 +111,22 @@ function applyTemplate(template: string, replacements: Record<string, string>) {
   return next
 }
 
+function buildFallbackClipCandidate(content: string): StoryToScriptClipCandidate {
+  const normalized = content.trim()
+  return {
+    id: 'clip_1',
+    startText: normalized,
+    endText: normalized,
+    summary: '',
+    location: null,
+    characters: [],
+    props: [],
+    content,
+    matchLevel: 'L3',
+    matchConfidence: 0,
+  }
+}
+
 function parseClipArray(responseText: string): Record<string, unknown>[] {
   return safeParseJsonArray(responseText, 'clips')
 }
@@ -416,6 +432,8 @@ export async function runStoryToScriptOrchestrator(
   let splitStep: StoryToScriptStepOutput | null = null
   let clipList: StoryToScriptClipCandidate[] = []
   let lastBoundaryError: Error | null = null
+  let lastSplitOutput: StoryToScriptStepOutput | null = null
+  let sawEmptySplitResult = false
 
   for (let attempt = 1; attempt <= MAX_SPLIT_BOUNDARY_ATTEMPTS; attempt += 1) {
     const splitMeta: StoryToScriptStepMeta = {
@@ -436,7 +454,9 @@ export async function runStoryToScriptOrchestrator(
       2600,
       parseClipArray,
     )
+    lastSplitOutput = output
     if (rawClipList.length === 0) {
+      sawEmptySplitResult = true
       lastBoundaryError = new Error('split_clips returned empty clips')
       onLog?.('片段切分结果为空', {
         attempt,
@@ -501,6 +521,16 @@ export async function runStoryToScriptOrchestrator(
       startText: failedAt.startText,
       endText: failedAt.endText,
     })
+  }
+
+  if (!splitStep) {
+    if (sawEmptySplitResult && lastSplitOutput) {
+      splitStep = lastSplitOutput
+      clipList = [buildFallbackClipCandidate(content)]
+      onLog?.('片段切分为空，降级为单片段全文继续处理', {
+        clipCount: clipList.length,
+      })
+    }
   }
 
   if (!splitStep) {

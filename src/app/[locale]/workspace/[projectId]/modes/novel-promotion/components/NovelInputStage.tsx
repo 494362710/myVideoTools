@@ -22,6 +22,7 @@ import { expandHomeStory } from '@/lib/home/ai-story-expand'
 
 /** 触发智能分集建议的字数阈值 */
 const LONG_TEXT_THRESHOLD = 1000
+const BACKGROUND_SERVICES_ENABLED = process.env.NEXT_PUBLIC_ENABLE_BACKGROUND_SERVICES !== 'false'
 
 
 
@@ -96,9 +97,11 @@ export default function NovelInputStage({
 
   const hasContent = localText.trim().length > 0
   const [showLongTextPrompt, setShowLongTextPrompt] = useState(false)
+  const startDisabled = !hasContent || isSubmittingTask || isSwitchingStage || !BACKGROUND_SERVICES_ENABLED
 
   /** 点击"开始创作"时，先检测文本长度 */
   const handleStartClick = useCallback(() => {
+    if (!BACKGROUND_SERVICES_ENABLED) return
     const textLength = localText.trim().length
     if (textLength > LONG_TEXT_THRESHOLD && onSmartSplit) {
       setShowLongTextPrompt(true)
@@ -202,7 +205,8 @@ export default function NovelInputStage({
           primaryAction={(
             <button
               onClick={handleStartClick}
-              disabled={!hasContent || isSubmittingTask || isSwitchingStage}
+              disabled={startDisabled}
+              title={!BACKGROUND_SERVICES_ENABLED ? t('storyInput.asyncCreationDisabled.title') : undefined}
               className="glass-btn-base glass-btn-primary h-10 flex-shrink-0 px-5 text-sm disabled:opacity-50 flex items-center gap-2"
             >
               {isSwitchingStage ? (
@@ -235,6 +239,14 @@ export default function NovelInputStage({
             </button>
           )}
         />
+        {!BACKGROUND_SERVICES_ENABLED && (
+          <div className="mt-3 rounded-xl border border-[var(--glass-tone-warning-fg)]/20 bg-[var(--glass-tone-warning-bg)] px-4 py-3 text-sm text-[var(--glass-tone-warning-fg)]">
+            <div className="font-medium">{t('storyInput.asyncCreationDisabled.title')}</div>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--glass-text-secondary)]">
+              {t('storyInput.asyncCreationDisabled.description')}
+            </p>
+          </div>
+        )}
       </div>
       <AiWriteModal
         open={aiWriteOpen}
