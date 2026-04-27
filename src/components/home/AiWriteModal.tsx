@@ -97,7 +97,7 @@ export default function AiWriteModal({
             className="px-3 py-2 rounded-lg text-xs text-[var(--glass-text-tertiary)] leading-relaxed"
             style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.06), rgba(139,92,246,0.06))' }}
           >
-            {t('hint')+"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"}
+            {t('hint')}
           </div>
 
           {/* 按钮区域 */}
