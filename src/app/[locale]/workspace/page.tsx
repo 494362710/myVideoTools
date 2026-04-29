@@ -223,9 +223,7 @@ export default function WorkspacePage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    // 转换为北京时间 (UTC+8)
-    const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000)
-    return beijingTime.toLocaleDateString('zh-CN', {
+    return date.toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

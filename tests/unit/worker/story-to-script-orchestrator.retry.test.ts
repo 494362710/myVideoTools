@@ -342,4 +342,54 @@ describe('story-to-script orchestrator retry', () => {
       content: '甲在门口。乙回答。',
     })
   })
+
+  it('sanitizes malformed split_clips boundary labels before screenplay fan-out', async () => {
+    const runStep = vi.fn(async (_meta, _prompt, action: string) => {
+      if (action === 'analyze_characters') {
+        return { text: JSON.stringify({ characters: [] }), reasoning: '' }
+      }
+      if (action === 'analyze_locations') {
+        return { text: JSON.stringify({ locations: [] }), reasoning: '' }
+      }
+      if (action === 'analyze_props') {
+        return { text: JSON.stringify({ props: [] }), reasoning: '' }
+      }
+      if (action === 'split_clips') {
+        return {
+          text: JSON.stringify([
+            {
+              start: '两只蝴蝶在花丛中飞舞”end="两只蝴蝶在花丛中飞舞”',
+              end: '两只蝴蝶在花丛中飞舞”end="两只蝴蝶在花丛中飞舞”',
+              summary: '片段摘要',
+            },
+          ]),
+          reasoning: '',
+        }
+      }
+      return { text: JSON.stringify({ scenes: [{ id: 1 }] }), reasoning: '' }
+    })
+
+    const result = await runStoryToScriptOrchestrator({
+      content: '两只蝴蝶在花丛中飞舞',
+      baseCharacters: [],
+      baseLocations: [],
+      baseCharacterIntroductions: [],
+      promptTemplates: {
+        characterPromptTemplate: '{input} {characters_lib_name} {characters_lib_info}',
+        locationPromptTemplate: '{input} {locations_lib_name}',
+        propPromptTemplate: '{input} {props_lib_name}',
+        clipPromptTemplate: '{input} {locations_lib_name} {characters_lib_name} {characters_introduction}',
+        screenplayPromptTemplate: '{clip_content} {locations_lib_name} {characters_lib_name} {characters_introduction} {clip_id}',
+      },
+      runStep,
+    })
+
+    expect(result.summary.clipCount).toBe(1)
+    expect(result.clipList[0]).toMatchObject({
+      id: 'clip_1',
+      startText: '两只蝴蝶在花丛中飞舞',
+      endText: '两只蝴蝶在花丛中飞舞',
+      content: '两只蝴蝶在花丛中飞舞',
+    })
+  })
 })

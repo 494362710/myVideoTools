@@ -126,7 +126,6 @@ export function useApiConfigFilters({
 
     return grouped
   }, [models, providers])
-
   return {
     modelProviders,
     getModelsForProvider: (providerId: string) =>

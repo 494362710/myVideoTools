@@ -2,7 +2,7 @@ import { safeParseJsonArray, safeParseJsonObject } from '@/lib/json-repair'
 import { buildCharactersIntroduction } from '@/lib/constants'
 import { normalizeAnyError } from '@/lib/errors/normalize'
 import { createScopedLogger } from '@/lib/logging/core'
-import { createClipContentMatcher, type ClipMatchLevel } from './clip-matching'
+import { createClipContentMatcher, sanitizeClipBoundaryText, type ClipMatchLevel } from './clip-matching'
 import { mapWithConcurrency } from '@/lib/async/map-with-concurrency'
 import {
   DEFAULT_ANALYSIS_WORKFLOW_CONCURRENCY,
@@ -472,8 +472,8 @@ export async function runStoryToScriptOrchestrator(
 
     for (let index = 0; index < rawClipList.length; index += 1) {
       const item = rawClipList[index]
-      const startText = asString(item.start)
-      const endText = asString(item.end)
+      const startText = sanitizeClipBoundaryText(asString(item.start))
+      const endText = sanitizeClipBoundaryText(asString(item.end))
       const clipId = `clip_${index + 1}`
       const match = matcher.matchBoundary(startText, endText, searchFrom)
       if (!match) {

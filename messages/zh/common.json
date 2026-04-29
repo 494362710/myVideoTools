@@ -1,6 +1,6 @@
 {
     "appName": "waoowaoo",
-    "betaVersion": "Beta v{version}",
+    "betaVersion": "中节科技",
     "updateNotice": {
         "title": "发现新版本",
         "subtitle": "当前 v{current} · 最新 v{latest}",

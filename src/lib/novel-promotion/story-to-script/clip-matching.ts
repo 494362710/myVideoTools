@@ -23,6 +23,9 @@ export type TextMarkerMatcher = {
   matchMarker: (markerText: string, fromIndex: number) => TextMarkerMatch | null
 }
 
+const LEADING_BOUNDARY_LABEL_RE = /^\s*["'“”‘’]?\s*(?:start|end)\s*["'“”‘’]?\s*[:=]\s*/i
+const EMBEDDED_BOUNDARY_LABEL_RE = /["'“”‘’]\s*(?:start|end)\s*["'“”‘’]?\s*[:=]|\b(?:start|end)\s*[:=]/gi
+
 type NormalizedContent = {
   text: string
   rawStartByNorm: number[]
@@ -106,6 +109,25 @@ function normalizeQuery(text: string): string {
   return buildNormalizedContent(text).text
 }
 
+export function sanitizeClipBoundaryText(text: string): string {
+  let cleaned = text.trim()
+  if (!cleaned) return ''
+
+  cleaned = cleaned.replace(LEADING_BOUNDARY_LABEL_RE, '').trim()
+
+  EMBEDDED_BOUNDARY_LABEL_RE.lastIndex = 0
+  let match = EMBEDDED_BOUNDARY_LABEL_RE.exec(cleaned)
+  while (match) {
+    if (match.index > 0) {
+      cleaned = cleaned.slice(0, match.index).trim()
+      break
+    }
+    match = EMBEDDED_BOUNDARY_LABEL_RE.exec(cleaned)
+  }
+
+  return cleaned.trim()
+}
+
 function findNormIndexForRaw(normalized: NormalizedContent, rawIndex: number): number {
   if (normalized.rawStartByNorm.length === 0) return 0
   let left = 0
@@ -123,9 +145,18 @@ function findNormIndexForRaw(normalized: NormalizedContent, rawIndex: number): n
 
 function tryExactRawMatch(content: string, startText: string, endText: string, fromIndex: number): ClipBoundaryMatch | null {
   let startCursor = Math.max(0, fromIndex)
+  const sameBoundary = startText === endText
   while (startCursor < content.length) {
     const startIndex = content.indexOf(startText, startCursor)
     if (startIndex === -1) return null
+    if (sameBoundary) {
+      return {
+        startIndex,
+        endIndex: startIndex + startText.length,
+        level: 'L1',
+        confidence: 1,
+      }
+    }
     const endIndex = content.indexOf(endText, startIndex + startText.length)
     if (endIndex !== -1) {
       return {
@@ -158,6 +189,7 @@ function tryExactNormalizedMatch(
   fromIndex: number,
 ): ClipBoundaryMatch | null {
   let startNormCursor = findNormIndexForRaw(normalized, fromIndex)
+  const sameBoundary = startQuery === endQuery
   while (startNormCursor < normalized.text.length) {
     const startNormIndex = normalized.text.indexOf(startQuery, startNormCursor)
     if (startNormIndex === -1) return null
@@ -166,6 +198,19 @@ function tryExactNormalizedMatch(
     if (rawStart < fromIndex) {
       startNormCursor = startNormIndex + 1
       continue
+    }
+
+    if (sameBoundary) {
+      const startNormLast = startNormIndex + startQuery.length - 1
+      const rawEnd = normalized.rawEndByNorm[startNormLast]
+      if (rawEnd > rawStart) {
+        return {
+          startIndex: rawStart,
+          endIndex: rawEnd,
+          level: 'L2',
+          confidence: 0.97,
+        }
+      }
     }
 
     let endNormCursor = startNormIndex + startQuery.length
@@ -421,8 +466,8 @@ export function createClipContentMatcher(content: string): ClipContentMatcher {
 
   return {
     matchBoundary(startText: string, endText: string, fromIndex: number): ClipBoundaryMatch | null {
-      const start = startText.trim()
-      const end = endText.trim()
+      const start = sanitizeClipBoundaryText(startText)
+      const end = sanitizeClipBoundaryText(endText)
       if (!start || !end) return null
 
       const l1 = tryExactRawMatch(content, start, end, fromIndex)

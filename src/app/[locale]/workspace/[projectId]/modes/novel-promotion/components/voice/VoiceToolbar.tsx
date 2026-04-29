@@ -86,7 +86,7 @@ export default function VoiceToolbar({
                                 <TaskStatusInline state={voiceTaskRunningState} className="text-white [&>span]:text-white [&_svg]:text-white" />
                                 <span className="text-xs text-white/90">({runningCount})</span>
                             </>
-                        ) : t("toolbar.generateAll")}
+                        ) : t("toolbar.generateAll")+"ewrewrewrwerew"}
                     </button>
                     <button
                         onClick={onDownloadAll}

@@ -117,6 +117,14 @@ export default function Navbar() {
                     <AppIcon name="folderHeart" className="w-4 h-4" />
                     {t('assetHub')}
                   </Link>
+                  <Link
+                    href={{ pathname: '/profile' }}
+                    className="text-sm text-[var(--glass-text-secondary)] hover:text-[var(--glass-text-primary)] font-medium transition-colors flex items-center gap-1"
+                    title={t('profile')}
+                  >
+                    <AppIcon name="userRoundCog" className="w-5 h-5" />
+                    {t('profile')}
+                  </Link>
                   <LanguageSwitcher />
                   <a
                     href={downloadLogsHref}

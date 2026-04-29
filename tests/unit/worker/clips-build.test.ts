@@ -49,6 +49,7 @@ vi.mock('@/lib/prompt-i18n', () => ({
   buildPrompt: vi.fn(() => 'clip-split-prompt'),
 }))
 vi.mock('@/lib/novel-promotion/story-to-script/clip-matching', () => ({
+  sanitizeClipBoundaryText: (text: string) => text.split(/(?:["'“”‘’]?\s*(?:start|end)\s*["'“”‘’]?\s*[:=])/i)[0].trim(),
   createClipContentMatcher: (content: string) => ({
     matchBoundary: (start: string, end: string, fromIndex = 0) => {
       const startIndex = content.indexOf(start, fromIndex)
@@ -157,6 +158,42 @@ describe('worker clips-build behavior', () => {
 
     const job = buildJob({ episodeId: 'episode-1' })
     await expect(handleClipsBuildTask(job)).rejects.toThrow('split_clips boundary matching failed')
+  })
+
+  it('sanitizes malformed concatenated boundary labels before matching', async () => {
+    prismaMock.novelPromotionEpisode.findUnique.mockResolvedValue({
+      id: 'episode-1',
+      name: '第一集',
+      novelPromotionProjectId: 'np-project-1',
+      novelText: '两只蝴蝶在花丛中飞舞',
+    })
+
+    llmMock.getCompletionContent.mockReturnValue(
+      JSON.stringify([
+        {
+          start: '两只蝴蝶在花丛中飞舞”end="两只蝴蝶在花丛中飞舞”',
+          end: '两只蝴蝶在花丛中飞舞”end="两只蝴蝶在花丛中飞舞”',
+          summary: 'clip summary',
+        },
+      ]),
+    )
+
+    const job = buildJob({ episodeId: 'episode-1' })
+    const result = await handleClipsBuildTask(job)
+
+    expect(result).toEqual({
+      episodeId: 'episode-1',
+      count: 1,
+    })
+
+    expect(prismaMock.novelPromotionClip.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        startText: '两只蝴蝶在花丛中飞舞',
+        endText: '两只蝴蝶在花丛中飞舞',
+        content: '两只蝴蝶在花丛中飞舞',
+      }),
+      select: { id: true },
+    })
   })
 
   it('falls back to a single full-content clip when split_clips returns empty array', async () => {

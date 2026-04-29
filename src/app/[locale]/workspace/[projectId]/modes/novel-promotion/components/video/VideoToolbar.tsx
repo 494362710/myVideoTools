@@ -98,6 +98,7 @@ export default function VideoToolbar({
               </>
             )}
           </button>
+          
           {onEnterEditor && (
             <button
               onClick={onEnterEditor}

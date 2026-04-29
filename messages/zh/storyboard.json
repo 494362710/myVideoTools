@@ -37,7 +37,7 @@
         "failed": "失败",
         "retry": "重试",
         "regenerate": "重新生成所有",
-        "generateAll": "批量生成全部",
+        "generateAll": "一键生成全部",
         "expand": "展开",
         "collapse": "收起",
         "addPanel": "添加镜头",

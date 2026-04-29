@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { executeAiTextStep } from '@/lib/ai-runtime'
 import { withInternalLLMStreamCallbacks } from '@/lib/llm-observe/internal-stream-context'
 import { buildCharactersIntroduction } from '@/lib/constants'
-import { createClipContentMatcher } from '@/lib/novel-promotion/story-to-script/clip-matching'
+import { createClipContentMatcher, sanitizeClipBoundaryText } from '@/lib/novel-promotion/story-to-script/clip-matching'
 import { reportTaskProgress } from '@/lib/workers/shared'
 import { assertTaskActive } from '@/lib/workers/utils'
 import { createWorkerLLMStreamCallbacks, createWorkerLLMStreamContext } from './llm-stream'
@@ -188,8 +188,8 @@ export async function handleClipsBuildTask(job: Job<TaskJobData>) {
       let failedAt: { index: number; startText: string; endText: string } | null = null
       for (let i = 0; i < parsed.length; i += 1) {
         const clipData = parsed[i]
-        const startText = readText(clipData.start)
-        const endText = readText(clipData.end)
+        const startText = sanitizeClipBoundaryText(readText(clipData.start))
+        const endText = sanitizeClipBoundaryText(readText(clipData.end))
         const match = matcher.matchBoundary(startText, endText, searchFrom)
         if (!match) {
           failedAt = { index: i + 1, startText, endText }

@@ -80,7 +80,7 @@
     "generatingShots": "{count} 个生成中",
     "completedShots": "{count} 个已生成",
     "failedShots": "{count} 个失败",
-    "generateAll": "一键生成",
+    "generateAll": "一键生成全部",
     "batchConfigTitle": "批量生成参数",
     "batchConfigDesc": "先选择模型与参数，再一键生成所有视频",
     "confirmGenerateAll": "确认并生成全部",
@@ -95,7 +95,7 @@
   },
   "stage": {
     "title": "视频生成",
-    "generateAll": "批量生成全部",
+    "generateAll": "一键生成全部",
     "regenerateFailed": "重试失败项",
     "downloadAll": "下载全部视频",
     "enterEditor": "进入剪辑器",
