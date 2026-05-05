@@ -108,8 +108,7 @@ export default function HomePage() {
         artStyle,
         episodeName: `${tc('episode')} 1`,
       })
-
-      router.push(result.target)
+       router.push(result.target)
     } catch (error) {
       const message = error instanceof Error ? error.message : t('createFailed')
       setCreateError(message)

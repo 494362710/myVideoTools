@@ -11,6 +11,7 @@ import {
   useDeleteProjectVoiceLine,
   useDownloadProjectVoices,
   useGenerateProjectVoice,
+  useProjectData,
   useUpdateProjectVoiceLine,
   useUpdateSpeakerVoice,
 } from '@/lib/query/hooks'
@@ -57,6 +58,7 @@ export function useVoiceStageRuntime({
     throw new Error('VoiceStage requires searchParams')
   }
   const { data: assets } = useProjectAssets(projectId)
+  const { data: projectData } = useProjectData(projectId)
   const { data: episodeData } = useEpisodeData(projectId, episodeId)
   const analyzeVoiceMutation = useAnalyzeProjectVoice(projectId)
   const generateVoiceMutation = useGenerateProjectVoice(projectId)
@@ -166,6 +168,7 @@ export function useVoiceStageRuntime({
   } = useVoiceGenerationActions({
     projectId,
     episodeId,
+    audioModel: projectData?.novelPromotionData?.audioModel,
     t: (key) => t(key as never),
     voiceLines,
     linesWithAudio,

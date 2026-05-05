@@ -1,10 +1,14 @@
 import { logInfo as _ulogInfo } from '@/lib/logging/core'
 
+export const BAILIAN_VOICE_DESIGN_MODEL_ID = 'qwen-voice-design'
+
 export interface VoiceDesignInput {
   voicePrompt: string
   previewText: string
   preferredName?: string
   language?: 'zh' | 'en'
+  modelId?: string
+  targetModelId?: string
 }
 
 export interface VoiceDesignResult {
@@ -31,15 +35,18 @@ export async function createVoiceDesign(
     }
   }
 
+  const modelId = input.modelId?.trim() || BAILIAN_VOICE_DESIGN_MODEL_ID
+  const targetModelId = input.targetModelId?.trim() || undefined
+
   const requestBody = {
-    model: 'qwen-voice-design',
+    model: modelId,
     input: {
       action: 'create',
-      target_model: 'qwen3-tts-vd-2026-01-26',
       voice_prompt: input.voicePrompt,
       preview_text: input.previewText,
       preferred_name: input.preferredName || 'custom_voice',
       language: input.language || 'zh',
+      ...(targetModelId ? { target_model: targetModelId } : {}),
     },
     parameters: {
       sample_rate: 24000,

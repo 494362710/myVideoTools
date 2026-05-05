@@ -1,5 +1,6 @@
 'use client'
 import { logError as _ulogError } from '@/lib/logging/core'
+import { logInfo as _ulogInfo } from '@/lib/logging/core'
 
 import { useEffect, useMemo, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -33,6 +34,8 @@ export function useSSE({ projectId, episodeId, enabled = true, onEvent }: UseSSE
 
     const source = new EventSource(url)
     sourceRef.current = source
+    let disposed = false
+    let hasOpened = false
 
     const invalidateEpisodeScoped = (resolvedEpisodeId: string | null) => {
       if (!resolvedEpisodeId) return
@@ -195,6 +198,10 @@ export function useSSE({ projectId, episodeId, enabled = true, onEvent }: UseSSE
       }
     }
 
+    source.onopen = () => {
+      hasOpened = true
+    }
+
     source.onmessage = handleEvent
     const namedEvents = [
       TASK_SSE_EVENT_TYPE.LIFECYCLE,
@@ -207,10 +214,29 @@ export function useSSE({ projectId, episodeId, enabled = true, onEvent }: UseSSE
       listeners.push({ type, handler })
     }
     source.onerror = (error) => {
-      _ulogError('[useSSE] stream error', error)
+      if (disposed) return
+
+      const readyState = source.readyState
+      if (readyState === EventSource.CONNECTING) {
+        _ulogInfo('[useSSE] stream reconnecting')
+        return
+      }
+      if (readyState === EventSource.CLOSED) {
+        if (hasOpened) {
+          _ulogInfo('[useSSE] stream closed')
+          return
+        }
+      }
+
+      _ulogError('[useSSE] stream error', {
+        readyState,
+        hasOpened,
+        error,
+      })
     }
 
     return () => {
+      disposed = true
       if (targetStatesInvalidateTimerRef.current !== null) {
         window.clearTimeout(targetStatesInvalidateTimerRef.current)
         targetStatesInvalidateTimerRef.current = null

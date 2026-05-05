@@ -1,6 +1,6 @@
 import { logError as _ulogError } from '@/lib/logging/core'
 import { queryKeys } from '@/lib/query/keys'
-import { useGenerateProjectVoice } from '@/lib/query/hooks'
+import { useGenerateProjectVoice, useProjectData } from '@/lib/query/hooks'
 import type { MatchedVoiceLinesData } from '@/lib/query/hooks/useVoiceLines'
 import { isAsyncTaskResponse } from '@/lib/task/client'
 import { useQueryClient } from '@tanstack/react-query'
@@ -24,6 +24,7 @@ export function usePanelVoiceManager({
   audioFailedMessage,
 }: UsePanelVoiceManagerParams) {
   const generateProjectVoiceMutation = useGenerateProjectVoice(projectId)
+  const { data: projectData } = useProjectData(projectId)
   const queryClient = useQueryClient()
   const [submittingAudioIds, setSubmittingAudioIds] = useState<Set<string>>(new Set())
   const [submittingVoiceAudioIds, setSubmittingVoiceAudioIds] = useState<Set<string>>(new Set())
@@ -104,6 +105,7 @@ export function usePanelVoiceManager({
       const data = await generateProjectVoiceMutation.mutateAsync({
         episodeId,
         lineId: voiceLine.id,
+        audioModel: projectData?.novelPromotionData?.audioModel,
       })
 
       if (isAsyncTaskResponse(data)) {
@@ -144,7 +146,7 @@ export function usePanelVoiceManager({
         return next
       })
     }
-  }, [audioFailedMessage, episodeId, generateProjectVoiceMutation, projectId, queryClient])
+  }, [audioFailedMessage, episodeId, generateProjectVoiceMutation, projectData?.novelPromotionData?.audioModel, projectId, queryClient])
 
   const hasMatchedVoiceLines = localVoiceLines.length > 0
   const hasMatchedAudio = localVoiceLines.some((line) => line.audioUrl)
