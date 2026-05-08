@@ -23,6 +23,7 @@ export default function Navbar() {
   const downloadLogsHref = '/api/admin/download-logs'
 
   const handleCheckUpdate = async () => {
+
     setCheckMsg(null)
     setCheckMsgFading(false)
     setManualChecking(true)

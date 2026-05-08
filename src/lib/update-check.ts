@@ -131,14 +131,14 @@ export async function checkGithubReleaseUpdate({
     }
   }
 
-  const endpoint = `https://api.github.com/repos/${repository}/releases/latest`
+  const endpoint = `https://api.zhongjiekeji.com/repos/${repository}/releases/latest`
 
   let response: Response
   try {
     response = await fetcher(endpoint, {
       method: 'GET',
       headers: {
-        Accept: 'application/vnd.github+json',
+        Accept: 'application/vnd.zhongjiekeji+json',
       },
       signal,
       cache: 'no-store',

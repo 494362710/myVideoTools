@@ -9,7 +9,6 @@ export const dynamic = 'force-dynamic'
 export const GET = apiHandler(async () => {
     const authResult = await requireUserAuth()
     if (isErrorResponse(authResult)) return authResult
-
     const logs = await readAllLogs()
     if (!logs) {
         return NextResponse.json({ error: 'No logs available' }, { status: 404 })
