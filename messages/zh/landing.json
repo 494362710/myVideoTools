@@ -1,12 +1,15 @@
 {
   "title": "中节科技",
   "subtitle": "AI影视Studio",
+  "description": "利用AI技术释放您的创意潜能，从剧本创作到影片生成的一站式解决方案",
   "enterWorkspace": "进入工作区",
   "loading": "加载中...",
   "getStarted": "立即体验",
+  "watchDemo": "观看演示",
   "learnMore": "了解更多",
   "features": {
     "title": "释放无限创造力",
+    "description": "探索我们强大的AI创作工具，让创意无限延伸",
     "subtitle": "全流程 AI 辅助，从剧本到成片",
     "character": {
       "title": "角色工坊",

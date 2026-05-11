@@ -1,12 +1,15 @@
 {
   "title": "zhongjiekeji",
   "subtitle": "AI Film & TV Studio",
+  "description": "Unleash your creative potential with AI technology. One-stop solution from script writing to video production",
   "enterWorkspace": "Enter Workspace",
   "loading": "Loading...",
   "getStarted": "Get Started",
+  "watchDemo": "Watch Demo",
   "learnMore": "Learn More",
   "features": {
     "title": "Unleash Infinite Creativity",
+    "description": "Explore our powerful AI creative tools and let your imagination soar",
     "subtitle": "Full-process AI assistance, from script to final cut",
     "character": {
       "title": "Character Workshop",
