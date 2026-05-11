@@ -153,6 +153,7 @@ export const PRESET_MODELS: PresetModel[] = [
     { modelId: 'wan2.2-i2v-plus', name: 'Wan2.2 I2V Plus', type: 'video', provider: 'bailian' },
     { modelId: 'wan2.2-kf2v-flash', name: 'Wan2.2 KF2V Flash', type: 'video', provider: 'bailian' },
     { modelId: 'wanx2.1-kf2v-plus', name: 'WanX2.1 KF2V Plus', type: 'video', provider: 'bailian' },
+    { modelId: 'HappyHorse-1.0-R2V', name: 'HappyHorse 1.0 R2V', type: 'video', provider: 'bailian' },
     { modelId: 'fal-wan25', name: 'Wan 2.6', type: 'video', provider: 'fal' },
     { modelId: 'fal-veo31', name: 'Veo 3.1', type: 'video', provider: 'fal' },
     { modelId: 'fal-sora2', name: 'Sora 2', type: 'video', provider: 'fal' },

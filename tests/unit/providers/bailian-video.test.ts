@@ -248,6 +248,94 @@ describe('bailian video provider', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('submits HappyHorse R2V with reference_image media (not img_url)', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({
+        output: {
+          task_id: 'task-hh',
+          task_status: 'PENDING',
+        },
+      }),
+    }))
+    vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
+
+    await generateBailianVideo({
+      userId: 'user-1',
+      imageUrl: 'https://example.com/ref.png',
+      prompt: '镜头推进',
+      options: {
+        provider: 'bailian',
+        modelId: 'HappyHorse-1.0-R2V',
+        modelKey: 'bailian::HappyHorse-1.0-R2V',
+        aspectRatio: '16:9',
+        resolution: '720P',
+        duration: 5,
+      },
+    })
+
+    const firstCall = fetchMock.mock.calls[0] as unknown as [RequestInfo | URL, RequestInit] | undefined
+    expect(firstCall).toBeDefined()
+    if (!firstCall) {
+      throw new Error('missing fetch call')
+    }
+    expect(JSON.parse(String(firstCall[1].body))).toEqual({
+      model: 'happyhorse-1.0-r2v',
+      input: {
+        prompt: '镜头推进',
+        media: [{ type: 'reference_image', url: 'https://example.com/ref.png' }],
+      },
+      parameters: {
+        resolution: '720P',
+        ratio: '16:9',
+        duration: 5,
+      },
+    })
+  })
+
+  it('maps aspectRatio to parameters.ratio for DashScope', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({
+        output: {
+          task_id: 'task-ratio',
+          task_status: 'PENDING',
+        },
+      }),
+    }))
+    vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
+
+    await generateBailianVideo({
+      userId: 'user-1',
+      imageUrl: 'https://example.com/frame.png',
+      prompt: 'test',
+      options: {
+        provider: 'bailian',
+        modelId: 'wan2.6-i2v',
+        modelKey: 'bailian::wan2.6-i2v',
+        aspectRatio: '16:9',
+      },
+    })
+
+    const firstCall = fetchMock.mock.calls[0] as unknown as [RequestInfo | URL, RequestInit] | undefined
+    expect(firstCall).toBeDefined()
+    if (!firstCall) {
+      throw new Error('missing fetch call')
+    }
+    expect(JSON.parse(String(firstCall[1].body))).toMatchObject({
+      model: 'wan2.6-i2v',
+      input: {
+        img_url: 'https://example.com/frame.png',
+        prompt: 'test',
+      },
+      parameters: {
+        ratio: '16:9',
+      },
+    })
+  })
+
   it('fails fast when options contain unsupported field', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)

@@ -65,23 +65,32 @@ export default function SignUp() {
   }
 
   return (
-    <div className="glass-page min-h-screen">
+    <div
+      className="glass-page min-h-screen"
+      style={{
+        backgroundImage: "url('/plugin.jpg')",
+        backgroundSize: "auto 100%",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundColor: "#020617",
+      }}
+    >
       <Navbar />
-      <div className="flex items-center justify-center px-4 py-12">
-        <div className="max-w-md w-full">
-          <div className="glass-surface-modal p-8">
-            <div className="text-center mb-8">
+      <div className="flex items-center justify-center  px-4 py-12">
+        <div className="max-w-md w-full" >
+          <div className="glass-surface-modal translate-y-[230px] p-8 !bg-transparent">
+            {/* <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-[var(--glass-text-primary)] mb-2">
                 {t('createAccount')}
               </h1>
               <p className="text-[var(--glass-text-secondary)]">{t('joinPlatform')}</p>
-            </div>
+            </div> */}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="glass-field-label block mb-2">
+                {/* <label htmlFor="name" className="glass-field-label block mb-2">
                   {t('phoneNumber')}
-                </label>
+                </label> */}
                 <input
                   id="name"
                   name="username"
@@ -95,39 +104,36 @@ export default function SignUp() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="password" className="glass-field-label block mb-2">
-                  {t('password')}
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="glass-input-base w-full px-4 py-3"
-                  placeholder={t('passwordMinPlaceholder')}
-                />
+              <div className="translate-y-[90px] space-y-3">
+                <div className="flex flex-row gap-3 items-start">
+                  <div className="min-w-0 flex-1">
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="glass-input-base w-full px-4 py-3"
+                      placeholder={t('passwordMinPlaceholder')}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="glass-input-base w-full px-4 py-3"
+                      placeholder={t('confirmPasswordPlaceholder')}
+                    />
+                  </div>
+                </div>
                 <PasswordStrengthIndicator password={password} />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="glass-field-label block mb-2">
-                  {t('confirmPassword')}
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="glass-input-base w-full px-4 py-3"
-                  placeholder={t('confirmPasswordPlaceholder')}
-                />
               </div>
 
               {error && (
@@ -145,13 +151,13 @@ export default function SignUp() {
               <button
                 type="submit"
                 disabled={loading}
-                className="glass-btn-base glass-btn-primary w-full py-3 px-4 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-transparent py-3 px-4 text-lg font-extrabold text-white shadow-none outline-none ring-0 transition-opacity hover:opacity-90 focus-visible:underline disabled:cursor-not-allowed disabled:opacity-50 translate-y-[160px]"
               >
                 {loading ? t('signupButtonLoading') : t('signupButton')}
               </button>
             </form>
 
-            <div className="mt-6 text-center">
+            {/* <div className="mt-6 text-center">
               <p className="text-[var(--glass-text-secondary)]">
                 {t('hasAccount')}{" "}
                 <Link href={{ pathname: '/auth/signin' }} className="text-[var(--glass-tone-info-fg)] hover:underline font-medium">
@@ -164,7 +170,7 @@ export default function SignUp() {
               <Link href={{ pathname: '/' }} className="text-[var(--glass-text-tertiary)] hover:text-[var(--glass-text-secondary)] text-sm">
                 {t('backToHome')}
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

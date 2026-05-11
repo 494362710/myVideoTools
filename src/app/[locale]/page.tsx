@@ -58,8 +58,7 @@ export default function Home() {
               src="/video/cb0b1f9da457ee55aac39fe2996c4ba2.mp4"
               autoPlay
               muted
-              loop
-              playsInline
+               playsInline
               className="w-full h-full object-cover block"
             />
             {/* 透明遮罩层 */}

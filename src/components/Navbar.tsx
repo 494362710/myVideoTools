@@ -39,7 +39,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="glass-nav sticky top-0 z-50">
+      <nav className="glass-nav sticky top-0 z-50 !bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export default function Navbar() {
                 <>
                   <Link
                     href={{ pathname: '/auth/signin' }}
-                    className="text-sm text-[var(--glass-text-secondary)] hover:text-[var(--glass-text-primary)] font-medium transition-colors"
+                    className="glass-btn-base glass-btn-primary px-4 py-2 text-sm font-medium"
                   >
                     {t('signin')}
                   </Link>

@@ -35,6 +35,10 @@ const BAILIAN_FIRST_LAST_FRAME_CAPABLE_MODELS = new Set([
   'wan2.7-i2v',
 ])
 
+/** 官方文档模型名为小写；注册表存 PascalCase，提交时需映射 */
+const HAPPYHORSE_R2V_API_MODEL = 'happyhorse-1.0-r2v'
+const HAPPYHORSE_RATIO_ALLOWED = new Set(['16:9', '9:16', '3:4', '4:3', '1:1'])
+
 interface BailianVideoSubmitResponse {
   request_id?: string
   code?: string
@@ -48,14 +52,26 @@ interface BailianVideoSubmitResponse {
 interface BailianVideoSubmitParameters {
   resolution?: string
   size?: string
+  /** 宽高比，如 16:9（DashScope parameters.ratio） */
+  ratio?: string
   watermark?: boolean
   prompt_extend?: boolean
   duration?: number
 }
 
+interface BailianHappyHorseMediaItem {
+  type: 'reference_image'
+  url: string
+}
+
 interface BailianVideoSubmitBody {
   model: string
-  input: Record<string, string>
+  input:
+    | Record<string, string>
+    | {
+        prompt?: string
+        media: BailianHappyHorseMediaItem[]
+      }
   parameters?: BailianVideoSubmitParameters
 }
 
@@ -83,6 +99,22 @@ function isFirstLastFrameOnlyModel(modelId: string): boolean {
   return BAILIAN_FIRST_LAST_FRAME_ONLY_MODELS.has(modelId)
 }
 
+function isHappyHorseR2vModel(modelId: string): boolean {
+  return readTrimmedString(modelId).toLowerCase() === HAPPYHORSE_R2V_API_MODEL
+}
+
+function normalizeHappyHorseResolution(value: string): string | undefined {
+  const u = value.trim().toUpperCase()
+  if (u === '720P' || u === '1080P') return u
+  return undefined
+}
+
+function normalizeHappyHorseRatio(value: string): string | undefined {
+  const t = readTrimmedString(value)
+  if (HAPPYHORSE_RATIO_ALLOWED.has(t)) return t
+  return undefined
+}
+
 function assertNoUnsupportedOptions(options: BailianGenerateRequestOptions): void {
   const allowedOptionKeys = new Set([
     'provider',
@@ -95,6 +127,8 @@ function assertNoUnsupportedOptions(options: BailianGenerateRequestOptions): voi
     'promptExtend',
     'duration',
     'lastFrameImageUrl',
+    'aspectRatio',
+    'aspect_ratio',
   ])
   for (const [key, value] of Object.entries(options)) {
     if (value === undefined) continue
@@ -127,12 +161,54 @@ function buildSubmitRequest(params: BailianVideoGenerateParams): {
     throw new Error(`BAILIAN_VIDEO_LAST_FRAME_UNSUPPORTED_FOR_MODEL: ${modelId}`)
   }
 
+  const isHappyHorse = isHappyHorseR2vModel(modelId)
+  if (isHappyHorse && firstLastFrame) {
+    throw new Error('BAILIAN_VIDEO_LAST_FRAME_UNSUPPORTED_FOR_MODEL: HappyHorse-1.0-R2V')
+  }
+
   const prompt = readTrimmedString(params.prompt) || readTrimmedString(params.options.prompt)
-  const resolution = readTrimmedString(params.options.resolution)
+  const resolutionRaw = readTrimmedString(params.options.resolution)
   const size = readTrimmedString(params.options.size)
+  const ratioRaw =
+    readTrimmedString(params.options.aspectRatio)
+    || readTrimmedString(params.options.aspect_ratio as string | undefined)
   const watermark = readOptionalBoolean(params.options.watermark)
   const promptExtend = readOptionalBoolean(params.options.promptExtend)
   const duration = readOptionalPositiveInteger(params.options.duration, 'duration')
+
+  if (isHappyHorse) {
+    const submitBody: BailianVideoSubmitBody = {
+      model: HAPPYHORSE_R2V_API_MODEL,
+      input: {
+        media: [{ type: 'reference_image', url: firstFrameUrl }],
+        ...(prompt ? { prompt } : {}),
+      },
+    }
+
+    const submitParameters: BailianVideoSubmitParameters = {}
+    const resNorm = resolutionRaw ? normalizeHappyHorseResolution(resolutionRaw) : undefined
+    if (resNorm) {
+      submitParameters.resolution = resNorm
+    }
+    const ratioNorm = ratioRaw ? normalizeHappyHorseRatio(ratioRaw) : undefined
+    if (ratioNorm) {
+      submitParameters.ratio = ratioNorm
+    }
+    if (typeof watermark === 'boolean') {
+      submitParameters.watermark = watermark
+    }
+    if (typeof duration === 'number') {
+      submitParameters.duration = duration
+    }
+    if (Object.keys(submitParameters).length > 0) {
+      submitBody.parameters = submitParameters
+    }
+
+    return {
+      endpoint: BAILIAN_VIDEO_ENDPOINT,
+      body: submitBody,
+    }
+  }
 
   const submitBody: BailianVideoSubmitBody = {
     model: modelId,
@@ -146,15 +222,19 @@ function buildSubmitRequest(params: BailianVideoGenerateParams): {
       },
   }
   if (prompt) {
-    submitBody.input.prompt = prompt
+    const input = submitBody.input as Record<string, string>
+    input.prompt = prompt
   }
 
   const submitParameters: BailianVideoSubmitParameters = {}
-  if (resolution) {
-    submitParameters.resolution = resolution
+  if (resolutionRaw) {
+    submitParameters.resolution = resolutionRaw
   }
   if (size) {
     submitParameters.size = size
+  }
+  if (ratioRaw) {
+    submitParameters.ratio = ratioRaw
   }
   if (typeof watermark === 'boolean') {
     submitParameters.watermark = watermark
@@ -209,7 +289,8 @@ export async function generateBailianVideo(params: BailianVideoGenerateParams): 
   if (!response.ok) {
     const code = readTrimmedString(data.code)
     const message = readTrimmedString(data.message)
-    throw new Error(`BAILIAN_VIDEO_SUBMIT_FAILED(${response.status}): ${code || message || 'unknown error'}`)
+    const detail = [code, message].filter(Boolean).join(' — ') || 'unknown error'
+    throw new Error(`BAILIAN_VIDEO_SUBMIT_FAILED(${response.status}): ${detail}`)
   }
 
   const taskId = readTrimmedString(data.output?.task_id)

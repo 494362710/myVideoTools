@@ -817,6 +817,20 @@
   },
   {
     "modelType": "video",
+    "provider": "bailian",
+    "modelId": "HappyHorse-1.0-R2V",
+    "capabilities": {
+      "video": {
+        "generationModeOptions": [
+          "normal"
+        ],
+        "firstlastframe": false,
+        "supportGenerateAudio": false
+      }
+    }
+  },
+  {
+    "modelType": "video",
     "provider": "minimax",
     "modelId": "minimax-hailuo-2.3",
     "capabilities": {

@@ -15,6 +15,8 @@ const BAILIAN_CATALOG: Readonly<Record<OfficialModelModality, readonly string[]>
     'wan2.2-i2v-plus',
     'wan2.2-kf2v-flash',
     'wanx2.1-kf2v-plus',
+    /** 参考图生视频（R2V），与 wan i2v 同异步 video-synthesis 链路 */
+    'HappyHorse-1.0-R2V',
   ],
   audio: [
     'qwen3-tts-vd-2026-01-26',
